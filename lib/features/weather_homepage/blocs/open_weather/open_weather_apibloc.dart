@@ -1,9 +1,9 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weather/either.dart';
-import 'package:weather/open_weather_event.dart';
-import 'package:weather/open_weather_repository.dart';
-import 'package:weather/open_weather_state.dart';
+import 'package:weather/utils/either.dart';
+import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_event.dart';
+import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_repository.dart';
+import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_state.dart';
 
 class OpenWeatherApiBloc
     extends Bloc<OpenWeatherApiEvent, OpenWeatherApiState> {

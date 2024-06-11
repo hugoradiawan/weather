@@ -1,4 +1,4 @@
-import 'package:weather/coordinate.dart';
+import 'package:weather/features/weather_homepage/data/coordinate.dart';
 
 abstract class OpenWeatherApiEvent {
   OpenWeatherApiEvent();

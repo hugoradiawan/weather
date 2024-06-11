@@ -1,5 +1,5 @@
-import 'package:weather/either.dart';
-import 'package:weather/open_weather_response.dart';
+import 'package:weather/utils/either.dart';
+import 'package:weather/features/weather_homepage/data/open_weather_response.dart';
 
 abstract class OpenWeatherApiState {
   const OpenWeatherApiState();

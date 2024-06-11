@@ -1,4 +1,4 @@
-import 'package:weather/typedefs.dart';
+import 'package:weather/utils/typedefs.dart';
 
 class Sys {
   Sys({

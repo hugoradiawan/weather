@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:weather/typedefs.dart';
+import 'package:weather/utils/typedefs.dart';
 
 class Coordinate extends Equatable {
   const Coordinate({

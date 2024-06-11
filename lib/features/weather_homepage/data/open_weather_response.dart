@@ -1,11 +1,11 @@
 import 'package:equatable/equatable.dart';
-import 'package:weather/clouds.dart';
-import 'package:weather/coordinate.dart';
-import 'package:weather/main_data.dart';
-import 'package:weather/sys.dart';
-import 'package:weather/typedefs.dart';
-import 'package:weather/weather.dart';
-import 'package:weather/wind.dart';
+import 'package:weather/features/weather_homepage/data/clouds.dart';
+import 'package:weather/features/weather_homepage/data/coordinate.dart';
+import 'package:weather/features/weather_homepage/data/main_data.dart';
+import 'package:weather/features/weather_homepage/data/sys.dart';
+import 'package:weather/utils/typedefs.dart';
+import 'package:weather/features/weather_homepage/data/weather.dart';
+import 'package:weather/features/weather_homepage/data/wind.dart';
 
 class OpenWeatherResponse extends Equatable {
   const OpenWeatherResponse({
