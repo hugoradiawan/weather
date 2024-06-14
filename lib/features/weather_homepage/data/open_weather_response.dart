@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:weather/features/weather_homepage/data/clouds.dart';
 import 'package:weather/features/weather_homepage/data/coordinate.dart';
 import 'package:weather/features/weather_homepage/data/main_data.dart';
 import 'package:weather/features/weather_homepage/data/sys.dart';
-import 'package:weather/utils/typedefs.dart';
 import 'package:weather/features/weather_homepage/data/weather.dart';
 import 'package:weather/features/weather_homepage/data/wind.dart';
+import 'package:weather/utils/typedefs.dart';
 
 class OpenWeatherResponse extends Equatable {
   const OpenWeatherResponse({
@@ -65,6 +66,19 @@ class OpenWeatherResponse extends Equatable {
         'dt': dateTime.millisecondsSinceEpoch ~/ 1000,
         'sys': sys.toJson(),
       };
+
+  String? getWeatherUrl({String? iconId}) {
+    final String iconid = iconId ?? weather.icon;
+    return 'https://openweathermap.org/img/wn/$iconid@2x.png';
+  }
+
+  TimeOfDay? getSunrise() {
+    return TimeOfDay.fromDateTime(sys.sunrise);
+  }
+
+  TimeOfDay? getSunset() {
+    return TimeOfDay.fromDateTime(sys.sunset);
+  }
 
   @override
   List<Object?> get props => [

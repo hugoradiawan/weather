@@ -9,7 +9,7 @@ class WeatherApp extends StatelessWidget {
         title: 'Weather App',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
+            seedColor: Colors.grey,
           ),
           useMaterial3: true,
         ),

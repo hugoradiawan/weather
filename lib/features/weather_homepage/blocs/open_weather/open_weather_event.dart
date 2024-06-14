@@ -4,8 +4,14 @@ abstract class OpenWeatherApiEvent {
   OpenWeatherApiEvent();
 }
 
-class GetWeatherEvent extends OpenWeatherApiEvent {
-  GetWeatherEvent(this.coordinate);
+class GetWeatherByPositionEvent extends OpenWeatherApiEvent {
+  GetWeatherByPositionEvent(this.coordinate);
 
   final Coordinate coordinate;
+}
+
+class GetWeatherByCityEvent extends OpenWeatherApiEvent {
+  GetWeatherByCityEvent(this.city);
+
+  final String city;
 }
