@@ -32,11 +32,12 @@ class WeatherPageUiState extends Equatable {
     Map<String, String>? countriesCodeAndName,
     TextEditingController? cityTec,
     RefreshController? refreshController,
+    isEmptyTheFailure = false,
   }) =>
       WeatherPageUiState(
         responses: responses ?? this.responses,
         isLoading: isLoading,
-        failure: failure ?? this.failure,
+        failure: isEmptyTheFailure ? null : failure ?? this.failure,
         coordinate: coordinate ?? this.coordinate,
         countriesCodeAndName: countriesCodeAndName ?? this.countriesCodeAndName,
         cityTec: cityTec ?? this.cityTec,
@@ -44,8 +45,8 @@ class WeatherPageUiState extends Equatable {
       );
 
   JSON toJson() => {
-        'responses': responses
-            ?.map<String, JSON?>((key, value) => MapEntry(key, value?.toJson())),
+        'responses': responses?.map<String, JSON?>(
+            (key, value) => MapEntry(key, value?.toJson())),
         'isLoading': isLoading,
         'failure': failure?.toJson(),
         'coordinate': coordinate?.toJson(),

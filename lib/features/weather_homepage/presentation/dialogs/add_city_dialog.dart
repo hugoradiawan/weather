@@ -16,6 +16,7 @@ class AddCityDialog extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             TextField(
+              focusNode: FocusNode()..requestFocus(),
               controller: mainContext.read<WeatherPageUiCubit>().state.cityTec,
               decoration: const InputDecoration(
                 labelText: 'Add New City',

@@ -36,6 +36,7 @@ class WeatherPageUiCubit extends HydratedCubit<WeatherPageUiState> {
             ...state.responses ?? {},
             success.response.name: success.response
           },
+          isEmptyTheFailure: true,
         ));
         state.cityTec?.clear();
         state.refreshController?.refreshCompleted();
