@@ -1,29 +1,26 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_apibloc.dart';
 import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_event.dart';
 import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_state.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uistate.dart';
-import 'package:weather/features/weather_homepage/data/coordinate.dart';
+import 'package:weather/utils/typedefs.dart';
 
-class WeatherPageUiCubit extends Cubit<WeatherPageUiState> {
+class WeatherPageUiCubit extends HydratedCubit<WeatherPageUiState> {
   WeatherPageUiCubit({required this.apiBloc})
-      : super(
-          const WeatherPageUiState().copyWith(
-            coordinate: const Coordinate(
-              longitude: 44.34,
-              latitude: 10.99,
-            ),
-            isLoading: false,
-          ),
-        ) {
+      : super(const WeatherPageUiState()) {
     _subscription = apiBloc.stream.listen(_onApiStateChange);
-    emit(state.copyWith(cityTec: TextEditingController()));
+    emit(state.copyWith(
+      cityTec: TextEditingController(),
+      refreshController: RefreshController(),
+    ));
     extractCountries();
   }
 
@@ -36,18 +33,28 @@ class WeatherPageUiCubit extends Cubit<WeatherPageUiState> {
         emit(state.copyWith(
           responses: {
             ...state.responses ?? {},
-            getCountryName(success.response.sys.country) ?? '': success.response
+            success.response.name: success.response
           },
-          isLoading: false,
         ));
         state.cityTec?.clear();
+        state.refreshController?.refreshCompleted();
         break;
       case OpenWeatherFailure fail:
-        emit(state.copyWith(failure: fail.failure, isLoading: false));
+        emit(state.copyWith(
+          failure: fail.failure,
+        ));
+        state.refreshController?.refreshFailed();
         break;
       case OpenWeatherLoading _:
+        state.refreshController?.requestRefresh();
         emit(state.copyWith(isLoading: true));
         break;
+    }
+  }
+
+  void refreshWeather() {
+    for (final key in state.responses?.keys.toList() ?? []) {
+      apiBloc.add(GetWeatherByCityEvent(key));
     }
   }
 
@@ -62,15 +69,15 @@ class WeatherPageUiCubit extends Cubit<WeatherPageUiState> {
   }
 
   String? getCountryName(String countryCode) {
-    return state.countriesCodeAndName?[countryCode.toUpperCase()];
+    return state.countriesCodeAndName?[countryCode.toUpperCase()]
+        ?.replaceAll(' (the)', '');
   }
 
   void extractCountries() {
     rootBundle.load('assets/countries.csv').then((data) {
-      String value =
+      final String value =
           utf8.decode(data.buffer.asUint8List(), allowMalformed: true);
-      // skip header
-      List<List<dynamic>> rowsAsListOfValues = const CsvToListConverter()
+      final List<List<dynamic>> rowsAsListOfValues = const CsvToListConverter()
           .convert(value, fieldDelimiter: ';')
           .skip(1)
           .toList();
@@ -86,7 +93,25 @@ class WeatherPageUiCubit extends Cubit<WeatherPageUiState> {
   Future<void> close() {
     _subscription.cancel();
     state.cityTec?.dispose();
+    state.refreshController?.dispose();
     return super.close();
+  }
+
+  @override
+  WeatherPageUiState? fromJson(JSON json) {
+    final temp = json;
+    temp.remove('countriesCodeAndName');
+    log('fromJSON: $json');
+    return WeatherPageUiState.fromJson(json);
+  }
+
+  @override
+  JSON? toJson(WeatherPageUiState state) {
+    final temp = state.toJson();
+    // delete key countriesCodeAndName
+    temp.remove('countriesCodeAndName');
+    log(temp.toString());
+    return state.toJson();
   }
 }
 
@@ -100,7 +125,8 @@ enum WeatherCondition {
   clouds,
   unknown;
 
-  static WeatherCondition fromCode(int code) {
+  static WeatherCondition fromCode(int? code) {
+    if (code == null) return WeatherCondition.unknown;
     if (code >= 200 && code < 300) {
       return WeatherCondition.thunderstorm;
     } else if (code >= 300 && code < 400) {

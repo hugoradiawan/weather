@@ -1,6 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_repository.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uicubit.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uistate.dart';
@@ -20,55 +22,71 @@ class OpenWeatherHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => OpenWeatherProvider(
         repository: repository,
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: Text(
-              'Weather App',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            actions: [
-              IconButton(
-                onPressed: () =>
-                    context.read<WeatherPageUiCubit>().fetchWeatherByCity,
-                icon: const Icon(Icons.refresh),
+        child: BlocListener<WeatherPageUiCubit, WeatherPageUiState>(
+          listenWhen: (previous, current) =>
+              previous.failure != current.failure ||
+              previous.isLoading != current.isLoading,
+          listener: (ctx, state) {
+            if (state.failure != null) {
+              ScaffoldMessenger.of(ctx).showSnackBar(
+                SnackBar(content: Text(state.failure!.message)),
+              );
+            } else if (state.isLoading) {
+              ScaffoldMessenger.of(ctx).showSnackBar(
+                const SnackBar(content: Text('Loading...')),
+              );
+            } else {
+              ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              title: Text(
+                'Weather App',
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
-              BlocBuilder<WeatherPageUiCubit, WeatherPageUiState>(
-                buildWhen: (_, __) => false,
-                builder: (ctx, _) => IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: ctx,
-                      builder: (_) => AddCityDialog(mainContext: ctx),
-                    );
-                  },
-                  icon: const Icon(Icons.location_city),
+              actions: [
+                BlocBuilder<WeatherPageUiCubit, WeatherPageUiState>(
+                  buildWhen: (_, __) => false,
+                  builder: (ctx, _) => IconButton(
+                    onPressed: ctx.read<WeatherPageUiCubit>().refreshWeather,
+                    icon: const Icon(Icons.refresh),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          body: BlocBuilder<WeatherPageUiCubit, WeatherPageUiState>(
-            buildWhen: (previous, current) =>
-                previous.isLoading != current.isLoading ||
-                previous.responses != current.responses ||
-                previous.failure != current.failure,
-            builder: (ctx, state) => state.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : state.failure != null
-                    ? Center(
-                        child: Text(
-                          state.failure!.message,
-                          style: Theme.of(ctx).textTheme.headlineMedium,
-                        ),
-                      )
-                    : state.responses != null
-                        ? ListView(
-                            children: state.responses?.values
-                                    .map((e) => WeatherTile(response: e))
-                                    .toList() ??
-                                [],
-                          )
-                        : const SizedBox.shrink(),
+                BlocBuilder<WeatherPageUiCubit, WeatherPageUiState>(
+                  buildWhen: (_, __) => false,
+                  builder: (ctx, _) => IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: ctx,
+                        builder: (_) => AddCityDialog(mainContext: ctx),
+                      );
+                    },
+                    icon: const Icon(Icons.location_city),
+                  ),
+                ),
+              ],
+            ),
+            body: BlocBuilder<WeatherPageUiCubit, WeatherPageUiState>(
+              buildWhen: (previous, current) =>
+                  previous.responses != current.responses ||
+                  previous.refreshController != current.refreshController,
+              builder: (ctx, state) => state.refreshController != null
+                  ? SmartRefresher(
+                      controller: state.refreshController!,
+                      onRefresh: ctx.read<WeatherPageUiCubit>().refreshWeather,
+                      child: state.responses != null
+                          ? ListView(
+                              children: state.responses?.values
+                                      .map((e) => WeatherTile(response: e!))
+                                      .toList() ??
+                                  [],
+                            )
+                          : const SizedBox.shrink(),
+                    )
+                  : const Center(child: CircularProgressIndicator()),
+            ),
           ),
         ),
       );
@@ -119,7 +137,7 @@ class WeatherTile extends StatelessWidget {
         data: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: WeatherCondition.getBackgroundColor(
-                    WeatherCondition.fromCode(response.weather.id)) ??
+                    WeatherCondition.fromCode(response.weather?[0]?.id)) ??
                 Colors.grey,
           ),
           sliderTheme: SliderThemeData(
@@ -142,8 +160,8 @@ class WeatherTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             color: WeatherCondition.getBackgroundColor(
-                        WeatherCondition.fromCode(response.weather.id))
-                    ?.withOpacity(0.3) ??
+                        WeatherCondition.fromCode(response.weather?[0]?.id))
+                    ?.withOpacity(0.2) ??
                 Colors.grey,
           ),
           height: 200,
@@ -155,17 +173,33 @@ class WeatherTile extends StatelessWidget {
                   flex: 2,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: AspectRatio(
-                      aspectRatio: 1,
-                      child: (response.getWeatherUrl() != null)
-                          ? CircleAvatar(
-                              radius: 50,
-                              child: Image.network(
-                                response.getWeatherUrl()!,
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
+                    child: Column(children: [
+                      Expanded(
+                        flex: 3,
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: (response.getWeatherUrl() != null)
+                              ? CircleAvatar(
+                                  radius: 50,
+                                  child: CachedNetworkImage(
+                                    imageUrl: response.getWeatherUrl()!,
+                                    progressIndicatorBuilder: (_, __, ___) =>
+                                        const SizedBox(
+                                      height: 30,
+                                      width: 30,
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    errorWidget: (_, __, ___) =>
+                                        const Icon(Icons.error),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ),
+                      Flexible(
+                        child: Text(response.weather?[0]?.main ?? ''),
+                      ),
+                    ]),
                   ),
                 ),
                 Expanded(
@@ -223,9 +257,16 @@ class WeatherTile extends StatelessWidget {
                       flex: 2,
                       child: Align(
                         alignment: Alignment.center,
-                        child: AutoSizeText(
-                          '${response.name}, ${context.read<WeatherPageUiCubit>().getCountryName(response.sys.country) ?? ''}',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                        child:
+                            BlocBuilder<WeatherPageUiCubit, WeatherPageUiState>(
+                          buildWhen: (previous, current) =>
+                              previous.countriesCodeAndName !=
+                                  current.countriesCodeAndName ||
+                              previous.responses != current.responses,
+                          builder: (context, _) => AutoSizeText(
+                            '${response.name}, ${context.read<WeatherPageUiCubit>().getCountryName(response.sys.country) ?? ''}',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
                         ),
                       ),
                     ),

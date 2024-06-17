@@ -27,15 +27,17 @@ class OpenWeatherResponse extends Equatable {
 
   final String baseData, name;
   final int timezone, id, cod, visibility;
-  final Coordinate coordinate;
-  final Weather weather;
+  final Coordinate? coordinate;
+  final List<Weather?>? weather;
   final Main main;
   final Wind wind;
   final Clouds clouds;
   final DateTime dateTime;
   final Sys sys;
 
-  factory OpenWeatherResponse.fromJson(JSON json) => OpenWeatherResponse(
+  static OpenWeatherResponse? fromJson(JSON? json) {
+    if (json == null) return null;
+    return OpenWeatherResponse(
         baseData: json['base'],
         name: json['name'],
         timezone: json['timezone'],
@@ -43,13 +45,14 @@ class OpenWeatherResponse extends Equatable {
         cod: json['cod'],
         visibility: json['visibility'],
         coordinate: Coordinate.fromJson(json['coord']),
-        weather: Weather.fromJson(json['weather'][0]),
+        weather: (json['weather'] as List?)?.map((e) => Weather.fromJson(e)).toList() ?? [],
         main: Main.fromJson(json['main']),
         wind: Wind.fromJson(json['wind']),
         clouds: Clouds.fromJson(json['clouds']),
         dateTime: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
         sys: Sys.fromJson(json['sys']),
       );
+  }
 
   JSON toJson() => {
         'base': baseData,
@@ -58,8 +61,8 @@ class OpenWeatherResponse extends Equatable {
         'id': id,
         'cod': cod,
         'visibility': visibility,
-        'coord': coordinate.toJson(),
-        'weather': weather.toJson(),
+        'coord': coordinate?.toJson(),
+        'weather': weather?.map((e) => e?.toJson()).toList() ?? [],
         'main': main.toJson(),
         'wind': wind.toJson(),
         'clouds': clouds.toJson(),
@@ -68,7 +71,8 @@ class OpenWeatherResponse extends Equatable {
       };
 
   String? getWeatherUrl({String? iconId}) {
-    final String iconid = iconId ?? weather.icon;
+    final String? iconid = iconId ?? weather?[0]?.icon;
+    if (iconid == null) return null;
     return 'https://openweathermap.org/img/wn/$iconid@2x.png';
   }
 

@@ -11,12 +11,15 @@ class Weather {
   final int id;
   final String main, description, icon;
 
-  factory Weather.fromJson(JSON json) => Weather(
+  static Weather? fromJson(JSON? json) {
+    if (json == null) return null;
+    return Weather(
         id: json['id'],
         main: json['main'],
         description: json['description'],
         icon: json['icon'],
       );
+  }
 
   JSON toJson() => {
         'id': id,

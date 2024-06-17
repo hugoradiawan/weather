@@ -9,10 +9,13 @@ class Coordinate extends Equatable {
 
   final double longitude, latitude;
 
-  factory Coordinate.fromJson(JSON json) => Coordinate(
-        longitude: json['lon'],
-        latitude: json['lat'],
-      );
+  static Coordinate? fromJson(JSON? json) {
+    if (json == null) return null;
+    return Coordinate(
+      longitude: json['lon'],
+      latitude: json['lat'],
+    );
+  }
 
   JSON toJson() => {
         'lon': longitude,

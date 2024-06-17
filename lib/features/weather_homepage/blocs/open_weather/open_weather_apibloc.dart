@@ -11,12 +11,12 @@ class OpenWeatherApiBloc
       : super(const OpenWeatherApiInitial()) {
     on<GetWeatherByPositionEvent>(
       _onGetWeatherByPosition,
-      transformer: droppable(),
+      transformer: concurrent(),
     );
 
     on<GetWeatherByCityEvent>(
       _onGetWeatherByCity,
-      transformer: droppable(),
+      transformer: concurrent(),
     );
   }
 
@@ -30,10 +30,10 @@ class OpenWeatherApiBloc
     try {
       (await repository.getWeatherByPosition(event.coordinate)).fold(
         (fail) => emit(OpenWeatherFailure(fail)),
-        (success) => emit(OpenWeatherSuccess(success)),
+        (success) => emit(OpenWeatherSuccess(success!)),
       );
     } catch (e) {
-      emit(OpenWeatherFailure(Failure('Failed to load weather', 801)));
+      emit(const OpenWeatherFailure(Failure('Failed to load weather', 801)));
       rethrow;
     }
   }
@@ -46,10 +46,10 @@ class OpenWeatherApiBloc
     try {
       (await repository.getWeatherByCity(event.city)).fold(
         (fail) => emit(OpenWeatherFailure(fail)),
-        (success) => emit(OpenWeatherSuccess(success)),
+        (success) => emit(OpenWeatherSuccess(success!)),
       );
     } catch (e) {
-      emit(OpenWeatherFailure(Failure('Failed to load weather', 801)));
+      emit(const OpenWeatherFailure(Failure('Failed to load weather', 801)));
       rethrow;
     }
   }

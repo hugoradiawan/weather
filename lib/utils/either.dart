@@ -1,3 +1,6 @@
+import 'package:equatable/equatable.dart';
+import 'package:weather/utils/typedefs.dart';
+
 class Either<F, S> {
   final F? fail;
   final S? success;
@@ -35,9 +38,34 @@ class Fail<L, R> extends Either<L, R> {
   Fail(L super.left) : super.left();
 }
 
-class Failure {
+class Failure extends Equatable {
   final String message;
-  final int code;
+  final int internalCode;
+  final int? code, randomValue;
 
-  Failure(this.message, this.code);
+  const Failure(this.message, this.internalCode, {this.code, this.randomValue});
+
+  @override
+  List<Object?> get props => [
+        message,
+        internalCode,
+        code,
+        randomValue,
+      ];
+
+  JSON toJson() => {
+        'msg': message,
+        'iCode': internalCode,
+        'c': code,
+        'r': randomValue,
+      };
+
+  static Failure? fromJson(JSON? json) => json == null
+      ? null
+      : Failure(
+          json['msg'],
+          json['iCode'],
+          code: json['c'],
+          randomValue: json['r'],
+        );
 }
