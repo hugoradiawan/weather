@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:weather/features/weather_homepage/data/coordinate.dart';
-import 'package:weather/features/weather_homepage/data/open_weather_response.dart';
+import 'package:weather/features/weather_homepage/data/models/coordinate.dart';
+import 'package:weather/features/weather_homepage/data/models/open_weather_response.dart';
 import 'package:weather/utils/either.dart';
 import 'package:weather/utils/typedefs.dart';
 

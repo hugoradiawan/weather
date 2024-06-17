@@ -63,9 +63,9 @@ class Failure extends Equatable {
   static Failure? fromJson(JSON? json) => json == null
       ? null
       : Failure(
-          json['msg'],
-          json['iCode'],
-          code: json['c'],
+          json['msg'] ?? json['message'] ?? 'Unknown error',
+          json['iCode'] ?? json['internalCode'] ?? -1,
+          code: json['c'] ?? int.tryParse(json['cod']),
           randomValue: json['r'],
         );
 }

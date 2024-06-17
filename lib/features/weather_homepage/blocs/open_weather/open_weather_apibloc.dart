@@ -1,4 +1,5 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_event.dart';
 import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_repository.dart';
@@ -28,9 +29,13 @@ class OpenWeatherApiBloc
   ) async {
     emit(const OpenWeatherLoading());
     try {
+      debugPrint('GetWeatherByPositionEvent: XXXXXXXXXXXXXXXX');
       (await repository.getWeatherByPosition(event.coordinate)).fold(
         (fail) => emit(OpenWeatherFailure(fail)),
-        (success) => emit(OpenWeatherSuccess(success!)),
+        (success) {
+          debugPrint('GetWeatherByPositionEvent: ${success!.name}');
+          emit(OpenWeatherSuccess(success));
+        },
       );
     } catch (e) {
       emit(const OpenWeatherFailure(Failure('Failed to load weather', 801)));

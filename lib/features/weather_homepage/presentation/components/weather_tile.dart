@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uicubit.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uistate.dart';
-import 'package:weather/features/weather_homepage/data/open_weather_response.dart';
+import 'package:weather/features/weather_homepage/data/enums/weather_condition.enum.dart';
+import 'package:weather/features/weather_homepage/data/models/open_weather_response.dart';
 import 'package:weather/features/weather_homepage/presentation/components/sunset_time_slider.dart';
 
 class WeatherTile extends StatelessWidget {

@@ -4,9 +4,8 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:weather/features/weather_homepage/blocs/open_weather/open_weather_repository.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uicubit.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uistate.dart';
-import 'package:weather/features/weather_homepage/presentation/dialogs/add_city_dialog.dart';
-import 'package:weather/features/weather_homepage/presentation/open_weather.provider.dart';
 import 'package:weather/features/weather_homepage/presentation/components/weather_tile.dart';
+import 'package:weather/features/weather_homepage/presentation/open_weather.provider.dart';
 
 class OpenWeatherHomePage extends StatelessWidget {
   OpenWeatherHomePage({
@@ -25,19 +24,8 @@ class OpenWeatherHomePage extends StatelessWidget {
           listenWhen: (previous, current) =>
               previous.failure != current.failure ||
               previous.isLoading != current.isLoading,
-          listener: (ctx, state) {
-            if (state.failure != null) {
-              ScaffoldMessenger.of(ctx).showSnackBar(
-                SnackBar(content: Text(state.failure!.message)),
-              );
-            } else if (state.isLoading) {
-              ScaffoldMessenger.of(ctx).showSnackBar(
-                const SnackBar(content: Text('Loading...')),
-              );
-            } else {
-              ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
-            }
-          },
+          listener: (ctx, state) =>
+              ctx.read<WeatherPageUiCubit>().listenToWeatherApiBloc(ctx, state),
           child: Scaffold(
             appBar: AppBar(
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -56,12 +44,8 @@ class OpenWeatherHomePage extends StatelessWidget {
                 BlocBuilder<WeatherPageUiCubit, WeatherPageUiState>(
                   buildWhen: (_, __) => false,
                   builder: (ctx, _) => IconButton(
-                    onPressed: () {
-                      showDialog(
-                        context: ctx,
-                        builder: (_) => AddCityDialog(mainContext: ctx),
-                      );
-                    },
+                    onPressed: () =>
+                        ctx.read<WeatherPageUiCubit>().showAddCityDialog(ctx),
                     icon: const Icon(Icons.location_city),
                   ),
                 ),

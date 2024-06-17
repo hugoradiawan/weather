@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:weather/features/weather_homepage/data/open_weather_response.dart';
+import 'package:weather/features/weather_homepage/data/models/open_weather_response.dart';
 import 'package:weather/utils/either.dart';
 
 abstract class OpenWeatherApiState extends Equatable {

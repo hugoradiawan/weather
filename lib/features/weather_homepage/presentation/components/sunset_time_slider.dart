@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uicubit.dart';
 import 'package:weather/features/weather_homepage/cubits/weather_page.uistate.dart';
-import 'package:weather/features/weather_homepage/data/open_weather_response.dart';
+import 'package:weather/features/weather_homepage/data/models/open_weather_response.dart';
 
 class SunsetTimeSlider extends StatelessWidget {
   const SunsetTimeSlider({super.key, required this.response});
